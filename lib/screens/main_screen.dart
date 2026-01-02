@@ -22,73 +22,13 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade100,
-        leading: Builder(
-          builder: (context) => Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: Icon(Icons.menu),
-            ),
-          ),
-        ),
-        centerTitle: true,
-        title: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Container(
-            height: 60,
-            width: MediaQuery.of(context).size.width,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              color: Colors.white,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: SearchBar(
-                    hintText: 'Search Ke...',
-                    elevation: WidgetStateProperty.all(0),
-                    backgroundColor: WidgetStateProperty.all(Colors.white),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Obx(
-                    () => IconButton(
-                      onPressed: controller.toggleView,
-                      icon: Icon(
-                        controller.view.value == NotesView.grid
-                            ? Icons.view_agenda_outlined
-                            : Icons.grid_view,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.swap_vert),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: CircleAvatar(
-              child: IconButton(onPressed: () {}, icon: Icon(Icons.person)),
-            ),
-          ),
-        ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Obx(() {
+          return controller.selectionMode.value
+              ? _contextualAppBar()
+              : _normalAppBar();
+        }),
       ),
       drawer: KeepDrawer(),
       body: Obx(() {
@@ -156,6 +96,100 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  PreferredSizeWidget _normalAppBar() {
+    return AppBar(
+      backgroundColor: Colors.grey.shade100,
+      leading: Builder(
+        builder: (context) => Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            icon: Icon(Icons.menu),
+          ),
+        ),
+      ),
+      centerTitle: true,
+      title: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Container(
+          height: 60,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            color: Colors.white,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: 3,
+                child: SearchBar(
+                  hintText: 'Search Ke...',
+                  elevation: WidgetStateProperty.all(0),
+                  backgroundColor: WidgetStateProperty.all(Colors.white),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Obx(
+                  () => IconButton(
+                    onPressed: controller.toggleView,
+                    icon: Icon(
+                      controller.view.value == NotesView.grid
+                          ? Icons.view_agenda_outlined
+                          : Icons.grid_view,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  onPressed: () {},
+                  icon: Icon(Icons.swap_vert),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: CircleAvatar(
+            child: IconButton(onPressed: () {}, icon: Icon(Icons.person)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  PreferredSizeWidget _contextualAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      leading: IconButton(
+        onPressed: controller. clearSelection,
+        icon: Icon(Icons.close),
+      ),
+      title: Obx(
+        () => Text(
+          controller.selectedIds.length.toString(),
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+      actions: [
+        IconButton(onPressed: () {}, icon: Icon(Icons.push_pin_outlined)),
+        IconButton(onPressed: () {}, icon: Icon(Icons.notifications_none)),
+        IconButton(onPressed: () {}, icon: Icon(Icons.color_lens_outlined)),
+        IconButton(onPressed: () {}, icon: Icon(Icons.label_outline)),
+        IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
+      ],
+    );
+  }
+
   Widget _buildGrid() {
     return MasonryGridView.count(
       crossAxisCount: 2,
@@ -183,9 +217,14 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _noteCard(NotesModel note, {bool isList = false}) {
+    final isSelected = controller.selectedIds.contains(note.id);
+
     return GestureDetector(
+      onLongPress: () => controller.onLongPressed(note.id),
       onTap: () {
-        Get.to(() => TextNotesScreen(note: note));
+        controller.selectionMode.value
+            ? controller.onTap(note.id)
+            : Get.to(() => TextNotesScreen(note: note));
       },
       child: Card(
         color: Color(note.color),
@@ -194,7 +233,9 @@ class _MainScreenState extends State<MainScreen> {
           decoration: BoxDecoration(
             color: Color(note.color),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
+            border: Border.all(
+              color: isSelected ? Colors.blue : Colors.grey.shade300,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

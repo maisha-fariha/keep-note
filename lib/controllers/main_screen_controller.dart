@@ -6,6 +6,9 @@ class MainScreenController extends GetxController {
   RxBool isFabOpen = false.obs;
   Rx<NotesView> view = NotesView.grid.obs;
 
+  RxBool selectionMode = false.obs;
+  RxSet<String> selectedIds = <String>{}.obs;
+
   void toggleFab() {
     isFabOpen.value = !isFabOpen.value;
   }
@@ -16,5 +19,28 @@ class MainScreenController extends GetxController {
 
   void closeFab() {
     isFabOpen.value = false;
+  }
+
+  void onLongPressed(String id) {
+    selectionMode.value = true;
+    selectedIds.add(id);
+  }
+
+  void onTap(String id) {
+    if (!selectionMode.value) return;
+
+    if (selectedIds.contains(id)) {
+      selectedIds.remove(id);
+      if(selectedIds.isEmpty) {
+        selectionMode.value = false;
+      }
+    } else {
+      selectedIds.add(id);
+    }
+  }
+
+  void clearSelection() {
+    selectionMode.value = false;
+    selectedIds.clear();
   }
 }
