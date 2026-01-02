@@ -3,6 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:keep_note/controllers/main_screen_controller.dart';
 import 'package:keep_note/controllers/notes_controller.dart';
+import 'package:keep_note/models/notes_model.dart';
 import 'package:keep_note/screens/text_notes_screen.dart';
 import 'package:keep_note/widgets/keep_drawer.dart';
 
@@ -58,9 +59,15 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 Expanded(
                   flex: 1,
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.view_agenda_outlined),
+                  child: Obx(
+                    () => IconButton(
+                      onPressed: controller.toggleView,
+                      icon: Icon(
+                        controller.view.value == NotesView.grid
+                            ? Icons.view_agenda_outlined
+                            : Icons.grid_view,
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(
@@ -102,63 +109,11 @@ class _MainScreenState extends State<MainScreen> {
         }
         return Padding(
           padding: EdgeInsets.all(16.0),
-          child: MasonryGridView.count(
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            itemCount: notesController.notes.length,
-            itemBuilder: (context, index) {
-              final note = notesController.notes[index];
-              return GestureDetector(
-                onTap: () {
-                  final note = notesController.notes[index];
-                  Get.to(() => TextNotesScreen(note: note));
-                },
-                child: Card(
-                  color: Color(note.color),
-                  child: Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Color(note.color),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (note.title.isNotEmpty)
-                          Text(
-                            note.title,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: note.bold
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                            ),
-                          ),
-                        if (note.title.isNotEmpty) SizedBox(height: 6),
-                        Text(
-                          note.content,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: note.bold
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            fontStyle: note.italic
-                                ? FontStyle.italic
-                                : FontStyle.normal,
-                            decoration: note.underline
-                                ? TextDecoration.underline
-                                : TextDecoration.none,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+          child: Obx(() {
+            return controller.view.value == NotesView.grid
+                ? _buildGrid()
+                : _buildList();
+          }),
         );
       }),
 
@@ -192,6 +147,76 @@ class _MainScreenState extends State<MainScreen> {
                     controller.isFabOpen.value ? Icons.close : Icons.add,
                     color: Colors.white,
                   ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGrid() {
+    return MasonryGridView.count(
+      crossAxisCount: 2,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      itemCount: notesController.notes.length,
+      itemBuilder: (context, index) {
+        final note = notesController.notes[index];
+        return _noteCard(note);
+      },
+    );
+  }
+
+  Widget _buildList() {
+    return ListView.builder(
+      itemCount: notesController.notes.length,
+      itemBuilder: (_, index) {
+        final note = notesController.notes[index];
+        return Padding(
+          padding: EdgeInsets.only(bottom: 16),
+          child: _noteCard(note, isList: true),
+        );
+      },
+    );
+  }
+
+  Widget _noteCard(NotesModel note, {bool isList = false}) {
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => TextNotesScreen(note: note));
+      },
+      child: Card(
+        color: Color(note.color),
+        child: Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Color(note.color),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (note.title.isNotEmpty)
+                Text(
+                  note.title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: note.bold ? FontWeight.bold : FontWeight.w500,
+                  ),
+                ),
+              if (note.title.isNotEmpty) SizedBox(height: 6),
+              Text(
+                note.content,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: note.bold ? FontWeight.bold : FontWeight.normal,
+                  fontStyle: note.italic ? FontStyle.italic : FontStyle.normal,
+                  decoration: note.underline
+                      ? TextDecoration.underline
+                      : TextDecoration.none,
                 ),
               ),
             ],

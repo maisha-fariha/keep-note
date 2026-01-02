@@ -1,10 +1,17 @@
 import 'package:get/get.dart';
 
-class MainScreenController extends GetxController{
+enum NotesView { grid, list }
+
+class MainScreenController extends GetxController {
   RxBool isFabOpen = false.obs;
+  Rx<NotesView> view = NotesView.grid.obs;
 
   void toggleFab() {
-    isFabOpen.value = ! isFabOpen.value;
+    isFabOpen.value = !isFabOpen.value;
+  }
+
+  void toggleView() {
+    view.value = view.value == NotesView.grid ? NotesView.list : NotesView.grid;
   }
 
   void closeFab() {
