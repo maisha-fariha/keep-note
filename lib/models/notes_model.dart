@@ -11,6 +11,8 @@ class NotesModel {
   final bool underline;
   final String heading;
 
+  final bool isDeleted;
+
 
   NotesModel({
     required this.id,
@@ -21,6 +23,7 @@ class NotesModel {
     required this.italic,
     required this.underline,
     required this.heading,
+    this.isDeleted = false,
   }) : color = color ?? 0xFFFFFFFF;
 
   Map<String, dynamic> toMap() {
@@ -33,6 +36,7 @@ class NotesModel {
       'italic': italic ? 1 : 0,
       'underline': underline ? 1 : 0,
       'heading': heading,
+      'isDeleted' : isDeleted ? 1 : 0,
     };
   }
 
@@ -46,6 +50,29 @@ class NotesModel {
       italic: (map['italic'] ?? 0) == 1,
       underline: (map['underline'] ?? 0) == 1,
       heading: map['heading'] ?? 'normal',
+      isDeleted: (map['isDeleted'] ?? 0) == 1,
+    );
+  }
+  NotesModel copyWith({
+    String? title,
+    String? content,
+    int? color,
+    bool? bold,
+    bool? italic,
+    bool? underline,
+    String? heading,
+    bool? isDeleted,
+  }) {
+    return NotesModel(
+      id: id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      color: color ?? this.color,
+      bold: bold ?? this.bold,
+      italic: italic ?? this.italic,
+      underline: underline ?? this.underline,
+      heading: heading ?? this.heading,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 }

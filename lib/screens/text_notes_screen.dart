@@ -42,7 +42,7 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
     if(widget.note != null) {
       titleController.text = widget.note!.title;
       noteController.text = widget.note!.content;
-      
+
       styleController.restoreFromNote(widget.note!);
 
       colorController.selectedColor.value = Color(widget.note!.color);

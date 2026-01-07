@@ -23,24 +23,28 @@ class MainScreenController extends GetxController {
 
   void onLongPressed(String id) {
     selectionMode.value = true;
-    selectedIds.add(id);
+    _toggleSelection(id);
   }
 
   void onTap(String id) {
     if (!selectionMode.value) return;
+    _toggleSelection(id);
+  }
 
+  void _toggleSelection(String id) {
     if (selectedIds.contains(id)) {
       selectedIds.remove(id);
-      if(selectedIds.isEmpty) {
-        selectionMode.value = false;
-      }
     } else {
       selectedIds.add(id);
     }
-  }
 
+
+    if (selectedIds.isEmpty) {
+      selectionMode.value = false;
+    }
+  }
   void clearSelection() {
-    selectionMode.value = false;
-    selectedIds.clear();
+      selectedIds.clear();
+      selectionMode.value = false;
   }
 }

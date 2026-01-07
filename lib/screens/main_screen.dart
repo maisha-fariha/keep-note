@@ -15,7 +15,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final MainScreenController controller = Get.put(MainScreenController());
+  final MainScreenController controller = Get.find<MainScreenController>();
   final NotesController notesController = Get.find();
 
   @override
@@ -32,13 +32,13 @@ class _MainScreenState extends State<MainScreen> {
       ),
       drawer: KeepDrawer(),
       body: Obx(() {
-        if (notesController.notes.isEmpty) {
+        if (notesController.activeNotes.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.lightbulb_outlined, size: 150),
+                Icon(Icons.lightbulb_outlined, size: 150, color: Colors.amber,),
                 Text(
                   'Notes you add appear here',
                   style: TextStyle(fontSize: 16),
@@ -185,7 +185,19 @@ class _MainScreenState extends State<MainScreen> {
         IconButton(onPressed: () {}, icon: Icon(Icons.notifications_none)),
         IconButton(onPressed: () {}, icon: Icon(Icons.color_lens_outlined)),
         IconButton(onPressed: () {}, icon: Icon(Icons.label_outline)),
-        IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
+        PopupMenuButton(
+          onSelected: (value) {
+            if (value == 'Delete') {
+              final ids = Set<String>.from(controller.selectedIds);
+              notesController.deleteNotes(ids);
+              controller.clearSelection();
+            }
+          },
+          itemBuilder: (_) => const [
+            PopupMenuItem(value: 'Archive', child: Text('Archive')),
+            PopupMenuItem(value: 'Delete', child: Text('Delete')),
+          ],
+        )
       ],
     );
   }
@@ -195,9 +207,9 @@ class _MainScreenState extends State<MainScreen> {
       crossAxisCount: 2,
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
-      itemCount: notesController.notes.length,
+      itemCount: notesController.activeNotes.length,
       itemBuilder: (context, index) {
-        final note = notesController.notes[index];
+        final note = notesController.activeNotes[index];
         return _noteCard(note);
       },
     );
@@ -205,9 +217,9 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildList() {
     return ListView.builder(
-      itemCount: notesController.notes.length,
+      itemCount: notesController.activeNotes.length,
       itemBuilder: (_, index) {
-        final note = notesController.notes[index];
+        final note = notesController.activeNotes[index];
         return Padding(
           padding: EdgeInsets.only(bottom: 16),
           child: _noteCard(note, isList: true),
@@ -217,54 +229,56 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _noteCard(NotesModel note, {bool isList = false}) {
-    final isSelected = controller.selectedIds.contains(note.id);
 
-    return GestureDetector(
-      onLongPress: () => controller.onLongPressed(note.id),
-      onTap: () {
-        controller.selectionMode.value
-            ? controller.onTap(note.id)
-            : Get.to(() => TextNotesScreen(note: note));
-      },
-      child: Card(
-        color: Color(note.color),
-        child: Container(
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Color(note.color),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? Colors.blue : Colors.grey.shade300,
+    return Obx(() {
+      final isSelected = controller.selectedIds.contains(note.id);
+      return GestureDetector(
+        onLongPress: () => controller.onLongPressed(note.id),
+        onTap: () {
+          controller.selectionMode.value
+              ? controller.onTap(note.id)
+              : Get.to(() => TextNotesScreen(note: note));
+        },
+        child: Card(
+          color: Color(note.color),
+          child: Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Color(note.color),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? Colors.blue : Colors.grey.shade300,
+              ),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (note.title.isNotEmpty)
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (note.title.isNotEmpty)
+                  Text(
+                    note.title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: note.bold ? FontWeight.bold : FontWeight.w500,
+                    ),
+                  ),
+                if (note.title.isNotEmpty) SizedBox(height: 6),
                 Text(
-                  note.title,
+                  note.content,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: note.bold ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 14,
+                    fontWeight: note.bold ? FontWeight.bold : FontWeight.normal,
+                    fontStyle: note.italic ? FontStyle.italic : FontStyle.normal,
+                    decoration: note.underline
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
                   ),
                 ),
-              if (note.title.isNotEmpty) SizedBox(height: 6),
-              Text(
-                note.content,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: note.bold ? FontWeight.bold : FontWeight.normal,
-                  fontStyle: note.italic ? FontStyle.italic : FontStyle.normal,
-                  decoration: note.underline
-                      ? TextDecoration.underline
-                      : TextDecoration.none,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _fabItem(

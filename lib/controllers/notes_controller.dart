@@ -15,6 +15,13 @@ class NotesController extends GetxController {
     loadNotes();
   }
 
+  List<NotesModel> get activeNotes =>
+      notes.where((n) => !n.isDeleted).toList();
+
+  List<NotesModel> get deletedNotes =>
+      notes.where((n) => n.isDeleted).toList();
+
+
   void loadNotes() {
     final storedNotes = _box.read<List>(_storageKey);
     print(GetStorage().read('notes'));
@@ -43,5 +50,23 @@ class NotesController extends GetxController {
 
   void saveNotes() {
     _box.write(_storageKey, notes.map((e) => e.toMap()).toList());
+  }
+
+  void deleteNotes(Set<String> ids) {
+    for (int i = 0; i < notes.length; i++) {
+      if (ids.contains(notes[i].id)) {
+        notes[i] = notes[i].copyWith(isDeleted: true);
+      }
+    }
+    saveNotes();
+  }
+
+  void restoreNotes(Set<String> ids) {
+    for (int i = 0; i < notes.length; i++) {
+      if (ids.contains(notes[i].id)) {
+        notes[i] = notes[i].copyWith(isDeleted: false);
+      }
+    }
+    saveNotes();
   }
 }
