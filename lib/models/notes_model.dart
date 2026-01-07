@@ -12,6 +12,7 @@ class NotesModel {
   final String heading;
 
   final bool isDeleted;
+  final int? deletedAt;
 
 
   NotesModel({
@@ -24,6 +25,7 @@ class NotesModel {
     required this.underline,
     required this.heading,
     this.isDeleted = false,
+    this.deletedAt,
   }) : color = color ?? 0xFFFFFFFF;
 
   Map<String, dynamic> toMap() {
@@ -37,6 +39,7 @@ class NotesModel {
       'underline': underline ? 1 : 0,
       'heading': heading,
       'isDeleted' : isDeleted ? 1 : 0,
+      'deletedAt' : deletedAt,
     };
   }
 
@@ -51,6 +54,7 @@ class NotesModel {
       underline: (map['underline'] ?? 0) == 1,
       heading: map['heading'] ?? 'normal',
       isDeleted: (map['isDeleted'] ?? 0) == 1,
+      deletedAt: map['deletedAt'],
     );
   }
   NotesModel copyWith({
@@ -62,6 +66,7 @@ class NotesModel {
     bool? underline,
     String? heading,
     bool? isDeleted,
+    int? deletedAt,
   }) {
     return NotesModel(
       id: id,
@@ -73,6 +78,7 @@ class NotesModel {
       underline: underline ?? this.underline,
       heading: heading ?? this.heading,
       isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }

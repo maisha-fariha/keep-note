@@ -13,6 +13,7 @@ class NotesController extends GetxController {
     // TODO: implement onInit
     super.onInit();
     loadNotes();
+    autoDeleteExpiredNotes();
   }
 
   List<NotesModel> get activeNotes =>
@@ -53,9 +54,11 @@ class NotesController extends GetxController {
   }
 
   void deleteNotes(Set<String> ids) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+
     for (int i = 0; i < notes.length; i++) {
       if (ids.contains(notes[i].id)) {
-        notes[i] = notes[i].copyWith(isDeleted: true);
+        notes[i] = notes[i].copyWith(isDeleted: true, deletedAt: now);
       }
     }
     saveNotes();
@@ -64,10 +67,20 @@ class NotesController extends GetxController {
   void restoreNotes(Set<String> ids) {
     for (int i = 0; i < notes.length; i++) {
       if (ids.contains(notes[i].id)) {
-        notes[i] = notes[i].copyWith(isDeleted: false);
+        notes[i] = notes[i].copyWith(isDeleted: false, deletedAt: null);
       }
     }
     saveNotes();
+  }
+
+  void autoDeleteExpiredNotes() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    
+    notes.removeWhere((note) {
+      if (!note.isDeleted || note.deletedAt == null) return false;
+      return now - note.deletedAt! >= sevenDays;
+    });
   }
 
   void emptyBin() {

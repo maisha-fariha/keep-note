@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.lightbulb_outlined, size: 150, color: Colors.amber,),
+                Icon(Icons.lightbulb_outlined, size: 150, color: Colors.amber),
                 Text(
                   'Notes you add appear here',
                   style: TextStyle(fontSize: 16),
@@ -171,7 +171,7 @@ class _MainScreenState extends State<MainScreen> {
     return AppBar(
       backgroundColor: Colors.white,
       leading: IconButton(
-        onPressed: controller. clearSelection,
+        onPressed: controller.clearSelection,
         icon: Icon(Icons.close),
       ),
       title: Obx(
@@ -190,16 +190,30 @@ class _MainScreenState extends State<MainScreen> {
           borderRadius: BorderRadius.circular(10),
           onSelected: (value) {
             if (value == 'Delete') {
-              final ids = Set<String>.from(controller.selectedIds);
-              notesController.deleteNotes(ids);
+              final deletedIds = Set<String>.from(controller.selectedIds);
+              notesController.deleteNotes(deletedIds);
               controller.clearSelection();
+
+              Get.snackbar(
+                'Note deleted',
+               'Notes in Recycle Bin are automatically deleted after 7 days',
+                snackPosition: SnackPosition.BOTTOM,
+                duration: Duration(seconds: 4),
+                mainButton: TextButton(
+                  onPressed: () {
+                    notesController.restoreNotes(deletedIds);
+                    Get.back();
+                  },
+                  child: Text('UNDO', style: TextStyle(color: Colors.white),),
+                ),
+              );
             }
           },
           itemBuilder: (_) => const [
             PopupMenuItem(value: 'Archive', child: Text('Archive')),
             PopupMenuItem(value: 'Delete', child: Text('Delete')),
           ],
-        )
+        ),
       ],
     );
   }
@@ -231,7 +245,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _noteCard(NotesModel note, {bool isList = false}) {
-
     return Obx(() {
       final isSelected = controller.selectedIds.contains(note.id);
       return GestureDetector(
@@ -269,7 +282,9 @@ class _MainScreenState extends State<MainScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: note.bold ? FontWeight.bold : FontWeight.normal,
-                    fontStyle: note.italic ? FontStyle.italic : FontStyle.normal,
+                    fontStyle: note.italic
+                        ? FontStyle.italic
+                        : FontStyle.normal,
                     decoration: note.underline
                         ? TextDecoration.underline
                         : TextDecoration.none,
