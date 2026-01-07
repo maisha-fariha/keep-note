@@ -14,6 +14,7 @@ class NotesController extends GetxController {
     super.onInit();
     loadNotes();
     autoDeleteExpiredNotes();
+    saveNotes();
   }
 
   List<NotesModel> get activeNotes =>

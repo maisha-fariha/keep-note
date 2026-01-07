@@ -10,12 +10,12 @@ import '../widgets/keep_color_bottom_sheet.dart';
 
 class TextNotesScreen extends StatefulWidget {
   final NotesModel? note;
+
   const TextNotesScreen({super.key, this.note});
 
   @override
   State<TextNotesScreen> createState() => _TextNotesScreenState();
 }
-
 
 class _TextNotesScreenState extends State<TextNotesScreen> {
   TextEditingController titleController = TextEditingController();
@@ -23,7 +23,6 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
   final NotesController notesController = Get.find();
   final ColorController colorController = Get.put(ColorController());
   final TextStyleController styleController = Get.find<TextStyleController>();
-
 
   Color selectedColor = Colors.white;
 
@@ -33,13 +32,11 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
   bool _isTitleFocused = false;
   bool _isNoteFocused = false;
 
-
-
   @override
   void initState() {
     super.initState();
 
-    if(widget.note != null) {
+    if (widget.note != null) {
       titleController.text = widget.note!.title;
       noteController.text = widget.note!.content;
 
@@ -61,24 +58,23 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
     });
   }
 
-
   void _saveAndBack() {
     final style = Get.find<TextStyleController>();
-    final note =  NotesModel(
+    final note = NotesModel(
       id: widget.note?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        title: titleController.text,
-        content: noteController.text,
-        color: colorController.selectedColor.value.value,
+      title: titleController.text,
+      content: noteController.text,
+      color: colorController.selectedColor.value.value,
 
-        bold: style.bold.value,
-        italic: style.italic.value,
-        underline: style.underline.value,
-        heading: style.heading.value.name,
-      );
+      bold: style.bold.value,
+      italic: style.italic.value,
+      underline: style.underline.value,
+      heading: style.heading.value.name,
+    );
 
-    if(widget.note == null) {
+    if (widget.note == null) {
       notesController.addNotes(note);
-    }else {
+    } else {
       notesController.updateNote(note);
     }
 
@@ -87,6 +83,100 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
     Get.back();
   }
 
+  void showReminderBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: false,
+      builder: (_) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              SizedBox(height: 20),
+              ListTile(
+                leading: Icon(Icons.notifications_active_outlined),
+                title: Text(
+                  'Remind me later',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text('Your reminders are saved in Google Tasks'),
+              ),
+              Divider(),
+              _reminderTile(
+                icon: Icons.access_time,
+                title: 'Later today',
+                time: '6:00 pm',
+                onTap: () {},
+              ),
+              _reminderTile(
+                icon: Icons.access_time,
+                title: 'Tomorrow morning',
+                time: '8:00 am',
+                onTap: () {},
+              ),
+              _reminderTile(
+                icon: Icons.access_time,
+                title: 'Next monday',
+                time: '8:00 am',
+                onTap: () {},
+              ),
+              _reminderTile(
+                icon: Icons.calendar_today_outlined,
+                title: 'Choose a date & time',
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickCustomDateTime(context);
+                },
+              ),
+              SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickCustomDateTime(BuildContext context) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+
+    if (date == null) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (time == null) return;
+
+    final selectedDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+    
+    print('Reminder set for: $selectedDateTime');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +205,9 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
             ),
             SizedBox(width: 5),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                showReminderBottomSheet(context);
+              },
               style: ElevatedButton.styleFrom(
                 shape: StadiumBorder(),
                 backgroundColor: Colors.grey.shade200,
@@ -191,10 +283,7 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
-                if (style.showToolbar.value)
-                  KeepToolTextBar(),
-
+                if (style.showToolbar.value) KeepToolTextBar(),
 
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -207,9 +296,9 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
                           backgroundColor: Colors.grey.shade200,
                         ),
                         onPressed: () {},
-                        child:  Icon(Icons.add_box_outlined),
+                        child: Icon(Icons.add_box_outlined),
                       ),
-                      SizedBox(width: 5,),
+                      SizedBox(width: 5),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           shape: StadiumBorder(),
@@ -218,9 +307,9 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
                         onPressed: () {
                           KeepColorBottomSheet.show(context);
                         },
-                        child:  Icon(Icons.color_lens_outlined),
+                        child: Icon(Icons.color_lens_outlined),
                       ),
-                      SizedBox(width: 5,),
+                      SizedBox(width: 5),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           shape: StadiumBorder(),
@@ -230,17 +319,16 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
                           style.toggleToolbar();
                           FocusScope.of(context).requestFocus(noteFocus);
                         },
-                        child:Icon(Icons.text_format),
-
+                        child: Icon(Icons.text_format),
                       ),
-                       Spacer(),
+                      Spacer(),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           shape: StadiumBorder(),
                           backgroundColor: Colors.grey.shade200,
                         ),
                         onPressed: () {},
-                        child:  Icon(Icons.more_vert),
+                        child: Icon(Icons.more_vert),
                       ),
                     ],
                   ),
@@ -249,8 +337,23 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
             ),
           );
         }),
-
       ),
+    );
+  }
+
+  Widget _reminderTile({
+    required IconData icon,
+    required String title,
+    String? time,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      trailing: time != null
+          ? Text(time, style: TextStyle(fontWeight: FontWeight.w500))
+          : null,
+      onTap: onTap,
     );
   }
 }
