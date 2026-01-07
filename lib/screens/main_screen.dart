@@ -186,6 +186,8 @@ class _MainScreenState extends State<MainScreen> {
         IconButton(onPressed: () {}, icon: Icon(Icons.color_lens_outlined)),
         IconButton(onPressed: () {}, icon: Icon(Icons.label_outline)),
         PopupMenuButton(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
           onSelected: (value) {
             if (value == 'Delete') {
               final ids = Set<String>.from(controller.selectedIds);

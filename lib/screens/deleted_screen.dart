@@ -18,6 +18,34 @@ class _DeletedScreenState extends State<DeletedScreen> {
 
   final MainScreenController controller = Get.find<MainScreenController>();
 
+  void _showEmptyBinDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: Text('Empty Recycle bin?'),
+        content: Text(
+          'All notes in the Recycle Bin will be permanently deleted',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              notesController.emptyBin();
+              controller.clearSelection();
+              Get.back();
+            },
+            child: const Text(
+              'Empty bin',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +87,20 @@ class _DeletedScreenState extends State<DeletedScreen> {
     return AppBar(
       backgroundColor: Colors.white,
       title: const Text('Deleted'),
+      actions: [
+        PopupMenuButton(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.grey.shade100,
+          itemBuilder: (_) => [
+            PopupMenuItem(value: 'empty', child: Text('Empty bin')),
+          ],
+          onSelected: (value) {
+            if (value == 'empty') {
+              _showEmptyBinDialog();
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -73,28 +115,26 @@ class _DeletedScreenState extends State<DeletedScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.restore),
-            onPressed: () {
-              notesController.restoreNotes(
-                Set<String>.from(controller.selectedIds),
-              );
+          onPressed: () {
+            notesController.restoreNotes(
+              Set<String>.from(controller.selectedIds),
+            );
 
-              controller.clearSelection();
-            }
-        )
+            controller.clearSelection();
+          },
+        ),
       ],
     );
   }
 
   // ───────── NOTE CARD ─────────
   Widget _noteCard(NotesModel note) {
-
     return Obx(() {
       final isSelected = controller.selectedIds.contains(note.id);
       return GestureDetector(
         onLongPress: () => controller.onLongPressed(note.id),
-        onTap: () => controller.selectionMode.value
-            ? controller.onTap(note.id)
-            : null,
+        onTap: () =>
+            controller.selectionMode.value ? controller.onTap(note.id) : null,
         child: Card(
           color: Color(note.color),
           shape: RoundedRectangleBorder(

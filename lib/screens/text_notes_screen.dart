@@ -209,6 +209,7 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
                         onPressed: () {},
                         child:  Icon(Icons.add_box_outlined),
                       ),
+                      SizedBox(width: 5,),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           shape: StadiumBorder(),
@@ -219,6 +220,7 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
                         },
                         child:  Icon(Icons.color_lens_outlined),
                       ),
+                      SizedBox(width: 5,),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           shape: StadiumBorder(),

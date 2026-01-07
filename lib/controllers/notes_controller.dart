@@ -69,4 +69,10 @@ class NotesController extends GetxController {
     }
     saveNotes();
   }
+
+  void emptyBin() {
+    notes.removeWhere((note) => note.isDeleted);
+    saveNotes();
+    notes.refresh();
+  }
 }
