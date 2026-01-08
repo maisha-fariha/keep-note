@@ -6,6 +6,7 @@ import 'package:keep_note/controllers/notes_controller.dart';
 import 'package:keep_note/models/notes_model.dart';
 import 'package:keep_note/screens/text_notes_screen.dart';
 import 'package:keep_note/widgets/keep_drawer.dart';
+import 'package:intl/intl.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -196,7 +197,7 @@ class _MainScreenState extends State<MainScreen> {
 
               Get.snackbar(
                 'Note deleted',
-               'Notes in Recycle Bin are automatically deleted after 7 days',
+                'Notes in Recycle Bin are automatically deleted after 7 days',
                 snackPosition: SnackPosition.BOTTOM,
                 duration: Duration(seconds: 4),
                 mainButton: TextButton(
@@ -204,7 +205,7 @@ class _MainScreenState extends State<MainScreen> {
                     notesController.restoreNotes(deletedIds);
                     Get.back();
                   },
-                  child: Text('UNDO', style: TextStyle(color: Colors.white),),
+                  child: Text('UNDO', style: TextStyle(color: Colors.white)),
                 ),
               );
             }
@@ -290,6 +291,32 @@ class _MainScreenState extends State<MainScreen> {
                         : TextDecoration.none,
                   ),
                 ),
+                if (note.reminderAt != null)
+                  Container(
+                    margin: EdgeInsets.only(top: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.notifications, size: 14),
+                        SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            DateFormat(
+                              'EEE, MMM d • hh:mm a',
+                            ).format(note.reminderAt!),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

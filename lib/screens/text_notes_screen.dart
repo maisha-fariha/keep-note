@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:keep_note/controllers/color_controller.dart';
 import 'package:keep_note/controllers/notes_controller.dart';
 import 'package:keep_note/models/notes_model.dart';
+import 'package:keep_note/services/reminder_services.dart';
 import 'package:keep_note/widgets/keep_tool_text_bar.dart';
 
 import '../controllers/text_style_controller.dart';
@@ -120,19 +121,33 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
                 icon: Icons.access_time,
                 title: 'Later today',
                 time: '6:00 pm',
-                onTap: () {},
+                onTap: () {
+                  _applyReminder(DateTime.now().copyWith(hour: 18, minute: 0));
+                },
               ),
               _reminderTile(
                 icon: Icons.access_time,
                 title: 'Tomorrow morning',
                 time: '8:00 am',
-                onTap: () {},
+                onTap: () {
+                  _applyReminder(
+                    DateTime.now()
+                        .add(Duration(days: 1))
+                        .copyWith(hour: 8, minute: 0),
+                  );
+                },
               ),
               _reminderTile(
                 icon: Icons.access_time,
                 title: 'Next monday',
                 time: '8:00 am',
-                onTap: () {},
+                onTap: () {
+                  final now = DateTime.now();
+                  final monday = now
+                      .add(Duration(days: 8 - now.weekday % 7))
+                      .copyWith(hour: 8, minute: 0);
+                  _applyReminder(monday);
+                },
               ),
               _reminderTile(
                 icon: Icons.calendar_today_outlined,
@@ -167,16 +182,51 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
 
     if (time == null) return;
 
-    final selectedDateTime = DateTime(
+    final reminderTime = DateTime(
       date.year,
       date.month,
       date.day,
       time.hour,
       time.minute,
     );
-    
-    print('Reminder set for: $selectedDateTime');
+
+    _applyReminder(reminderTime);
   }
+
+  void _applyReminder(DateTime time) {
+    final existingId =
+        widget.note?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+
+    final updatedNote = NotesModel(
+      id: existingId,
+      title: titleController.text,
+      content: noteController.text,
+      color: colorController.selectedColor.value.value,
+      bold: styleController.bold.value,
+      italic: styleController.italic.value,
+      underline: styleController.underline.value,
+      heading: styleController.heading.value.name,
+      reminderAt: time,
+    );
+
+    if (widget.note == null) {
+      notesController.addNotes(updatedNote);
+    } else {
+      notesController.updateNote(updatedNote);
+    }
+
+
+    ReminderServices.schedule(
+      noteId: existingId,
+      title: updatedNote.title,
+      body: updatedNote.content,
+      time: time,
+    );
+
+    Get.back(); // close bottom sheet
+    Get.back(); // back to main screen
+  }
+
 
   @override
   Widget build(BuildContext context) {

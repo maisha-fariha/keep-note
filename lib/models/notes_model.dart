@@ -1,5 +1,3 @@
-
-
 class NotesModel {
   final String id;
   final String title;
@@ -13,7 +11,7 @@ class NotesModel {
 
   final bool isDeleted;
   final int? deletedAt;
-
+  final DateTime? reminderAt;
 
   NotesModel({
     required this.id,
@@ -26,11 +24,12 @@ class NotesModel {
     required this.heading,
     this.isDeleted = false,
     this.deletedAt,
+    this.reminderAt,
   }) : color = color ?? 0xFFFFFFFF;
 
   Map<String, dynamic> toMap() {
     return {
-      'id' : id,
+      'id': id,
       'title': title,
       'content': content,
       'color': color,
@@ -38,8 +37,9 @@ class NotesModel {
       'italic': italic ? 1 : 0,
       'underline': underline ? 1 : 0,
       'heading': heading,
-      'isDeleted' : isDeleted ? 1 : 0,
-      'deletedAt' : deletedAt,
+      'isDeleted': isDeleted ? 1 : 0,
+      'deletedAt': deletedAt,
+      'reminderAt': reminderAt?.millisecondsSinceEpoch,
     };
   }
 
@@ -55,8 +55,12 @@ class NotesModel {
       heading: map['heading'] ?? 'normal',
       isDeleted: (map['isDeleted'] ?? 0) == 1,
       deletedAt: map['deletedAt'],
+      reminderAt: map['reminderAt'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['reminderAt'])
+          : null,
     );
   }
+
   NotesModel copyWith({
     String? title,
     String? content,
@@ -67,6 +71,7 @@ class NotesModel {
     String? heading,
     bool? isDeleted,
     int? deletedAt,
+    DateTime? reminderAt,
   }) {
     return NotesModel(
       id: id,
@@ -79,6 +84,7 @@ class NotesModel {
       heading: heading ?? this.heading,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
+      reminderAt: reminderAt ?? this.reminderAt,
     );
   }
 }
