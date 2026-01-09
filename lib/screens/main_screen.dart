@@ -296,7 +296,7 @@ class _MainScreenState extends State<MainScreen> {
                     margin: EdgeInsets.only(top: 8),
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: Colors.blueGrey.shade50,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(

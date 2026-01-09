@@ -47,6 +47,7 @@ class NotesController extends GetxController {
   void addNotes(NotesModel note) {
     notes.add(note);
     saveNotes();
+    notes.refresh();
   }
 
   void updateNote(NotesModel note) {
@@ -54,6 +55,7 @@ class NotesController extends GetxController {
     if (index != -1) {
       notes[index] = note;
       saveNotes();
+      notes.refresh();
     }
   }
 

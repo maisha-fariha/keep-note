@@ -5,7 +5,7 @@ import 'package:keep_note/controllers/notes_controller.dart';
 import 'package:keep_note/models/notes_model.dart';
 import 'package:keep_note/services/reminder_services.dart';
 import 'package:keep_note/widgets/keep_tool_text_bar.dart';
-
+import 'package:intl/intl.dart';
 import '../controllers/text_style_controller.dart';
 import '../widgets/keep_color_bottom_sheet.dart';
 
@@ -66,11 +66,14 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
       title: titleController.text,
       content: noteController.text,
       color: colorController.selectedColor.value.value,
-
       bold: style.bold.value,
       italic: style.italic.value,
       underline: style.underline.value,
       heading: style.heading.value.name,
+
+      reminderAt: widget.note?.reminderAt,
+      isDeleted: widget.note?.isDeleted ?? false,
+      deletedAt: widget.note?.deletedAt,
     );
 
     if (widget.note == null) {
@@ -215,7 +218,6 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
       notesController.updateNote(updatedNote);
     }
 
-
     ReminderServices.schedule(
       noteId: existingId,
       title: updatedNote.title,
@@ -224,9 +226,7 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
     );
 
     Get.back(); // close bottom sheet
-    Get.back(); // back to main screen
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -316,6 +316,10 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
                       ),
                     ),
                   ),
+
+                  /// 🔔 Reminder chip
+                  if (widget.note?.reminderAt != null)
+                    _reminderChip(widget.note!),
                 ],
               ),
             ),
@@ -404,6 +408,38 @@ class _TextNotesScreenState extends State<TextNotesScreen> {
           ? Text(time, style: TextStyle(fontWeight: FontWeight.w500))
           : null,
       onTap: onTap,
+    );
+  }
+
+  Widget _reminderChip(NotesModel note) {
+    if (note.reminderAt == null) return SizedBox();
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey.shade50,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.notifications),
+          SizedBox(width: 6),
+          Text(
+            DateFormat('EEE, MMM d • hh:mm a').format(note.reminderAt!),
+            style: TextStyle(fontSize: 13),
+          ),
+          SizedBox(width: 6),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              notesController.removeReminder(note.id);
+            },
+            child: Icon(Icons.close, size: 16),
+          ),
+        ],
+      ),
     );
   }
 }
